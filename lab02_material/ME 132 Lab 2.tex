@@ -1,0 +1,194 @@
+%%%%% Set up the page structure %%%%%
+\documentclass[10pt, titlepage, onecolumn, fleqn]{article}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{wasysym}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{float}
+\usepackage{pdfpages}
+\frenchspacing
+\setlength\topmargin{-0.75in}
+\setlength\headheight{0in}
+\setlength\headsep{0.25in}
+\setlength\textheight{9in}
+\setlength\textwidth{6.5in}
+\setlength\oddsidemargin{0in}
+\setlength\evensidemargin{0in}
+
+%%**** Figure/PDF commands for reference
+% \includepdf[pages=-]{./folder/file.pdf}
+
+% \begin{figure}[H]
+% \begin{center} \includegraphics[height=\textheight]{file.pdf} \end{center} \label{name}
+% \end{figure}
+
+
+%%***** START CUSTOM COMMANDS
+% Shorthand commands
+\newcommand{\bs}{\backslash}
+\newcommand{\bsyl}{\boldsymbol}
+
+% Formatting convenience
+\newcommand{\dd}{\mathrm{d}}	%% Convenience in typing derivative d's
+\newcommand{\di}{\,\mathrm{d}}	%% Convenience in typing integral d's
+\newcommand{\LRA}{\;\Longrightarrow\;}  %% For typing goes to statements
+\newcommand{\nlfrac}[2]{\genfrac{}{}{0pt}{}{#1}{#2}}      %% Fraction with no line
+\newcommand{\parfrac}[2]{\dfrac{\partial #1}{\partial #2}} %% partial derivative fraction
+\newcommand{\parfracsq}[2]{\dfrac{\partial^2 #1}{\partial #2^2}} %% partial derivative fraction
+\newcommand{\derfrac}[2]{\dfrac{\dd #1}{\dd #2}}           %% regular derivative fraction
+\newcommand{\derfracsq}[2]{\dfrac{\dd^2 #1}{\dd #2^2}}     %% regular derivative fraction
+
+% Grouping
+\newcommand{\lrangle}[1]{\langle #1 \rangle}  %% < #1 >
+\newcommand{\lrfloor}[1]{\lfloor #1 \rfloor}  %% floor( #1 )
+\newcommand{\lrceil}[1]{\lceil #1 \rceil}     %% ceil( #1 )
+\newcommand{\lrpar}[1]{\left( #1 \right)}     %% ( #1 )
+\newcommand{\lrbra}[1]{\left[ #1 \right]}     %% [ #1 ]
+\newcommand{\lrcur}[1]{\left\{ #1 \right\}}   %% { #1 }
+
+% Math words, capital provides parenthesis automatically
+\newcommand{\Sin}[1]{\text{sin}\left({#1}\right)}
+\newcommand{\Sinh}[1]{\text{sinh}\left({#1}\right)}
+\newcommand{\Cos}[1]{\text{cos}\left({#1}\right)}
+\newcommand{\Cosh}[1]{\text{cosh}\left({#1}\right)}
+\newcommand{\Tan}[1]{\text{tan}\left({#1}\right)}
+\newcommand{\Cot}[1]{\text{cot}\left({#1}\right)}
+\newcommand{\sech}{\text{sech}}
+\newcommand{\Sech}[1]{\text{sech}\left({#1}\right)}
+\newcommand{\Tanh}[1]{\text{tanh}\left({#1}\right)}
+\newcommand{\sinc}{\text{sinc}}
+\newcommand{\Sinc}[1]{\text{sinc}\left({#1}\right)}
+\newcommand{\Log}[1]{\text{log}\left({#1}\right)}
+\newcommand{\Max}[1]{\text{max}\left({#1}\right)}
+\newcommand{\Min}[1]{\text{min}\left({#1}\right)}
+\newcommand{\Ln}[1]{\ln\left({#1}\right)}
+\newcommand{\curl}[1]{\text{curl}\,#1}
+\newcommand{\divf}[1]{\text{div}\,#1}
+\newcommand{\aff}{\text{aff}}
+\newcommand{\Aff}[1]{\text{aff}\left\{#1\right\}}
+\newcommand{\lin}{\text{lin}}
+\newcommand{\Lin}[1]{\text{lin}\left\{#1\right\}}
+\newcommand{\cone}{\text{cone}}
+\newcommand{\Cone}[1]{\text{cone}\left\{#1\right\}}
+\newcommand{\conv}{\text{conv}}
+\newcommand{\Conv}[1]{\text{conv}\left(#1\right)}
+\newcommand{\dom}{\text{dom}}
+\newcommand{\Dom}[1]{\text{dom}\left(#1\right)}
+\newcommand{\rank}{\text{rank}}
+\newcommand{\Rank}[1]{\text{rank}\left(#1\right)}
+\newcommand{\prob}{\text{Pr}}
+\newcommand{\Prob}[1]{\text{Pr}\left(#1\right)}
+\newcommand{\Probc}[1]{\text{Pr}\left\{#1\right\}}
+\newcommand{\sgn}{\text{sgn}}
+\newcommand{\Sgn}[1]{\text{sgn}\left({#1}\right)}
+
+% Special letters: bb
+\newcommand{\bbC}{\mathbb{C}}
+\newcommand{\bbF}{\mathbb{F}}
+\newcommand{\bbQ}{\mathbb{Q}}
+\newcommand{\bbR}{\mathbb{R}}
+\newcommand{\bbZ}{\mathbb{Z}}
+\newcommand{\bbE}[1]{\mathbb{E}\left[#1\right]}
+\newcommand{\bbP}[1]{\mathbb{P}\left(#1\right)}
+
+% Special letters: cal
+\newcommand{\calB}{\mathcal{B}}
+\newcommand{\calC}{\mathcal{C}}
+\newcommand{\calD}{\mathcal{D}}
+\newcommand{\calE}{\mathcal{E}}
+\newcommand{\calF}{\mathcal{F}}
+\newcommand{\calL}{\mathcal{L}}
+\newcommand{\calN}{\mathcal{N}}
+\newcommand{\calP}{\mathcal{P}}
+\newcommand{\calS}{\mathcal{S}}
+\newcommand{\calU}{\mathcal{U}}
+\newcommand{\calV}{\mathcal{V}}
+\newcommand{\calW}{\mathcal{W}}
+\newcommand{\calX}{\mathcal{X}}
+\newcommand{\calY}{\mathcal{Y}}
+\newcommand{\calZ}{\mathcal{Z}}
+
+% Vector chars
+\newcommand{\va}{\vec{a}}
+\newcommand{\vb}{\vec{b}}
+\newcommand{\vc}{\vec{c}}
+\newcommand{\vd}{\vec{d}}
+\newcommand{\ve}{\vec{e}}
+\newcommand{\vg}{\vec{g}}
+\newcommand{\vh}{\vec{h}}
+\newcommand{\vm}{\vec{m}}
+\newcommand{\vr}{\vec{r}}
+\newcommand{\vs}{\vec{s}}
+\newcommand{\vt}{\vec{t}}
+\newcommand{\vu}{\vec{u}}
+\newcommand{\vw}{\vec{w}}
+\newcommand{\vv}{\vec{v}}
+\newcommand{\vx}{\vec{x}}
+\newcommand{\vy}{\vec{y}}
+\newcommand{\vz}{\vec{z}}
+\newcommand{\valpha}{\vec{\alpha}}
+\newcommand{\vbeta}{\vec{\beta}}
+\newcommand{\vnu}{\vec{\nu}}
+\newcommand{\vzero}{\vec{0}}
+\newcommand{\vone}{\vec{1}}
+
+% Hat chars
+\newcommand{\hm}{\hat{m}}
+\newcommand{\hM}{\hat{M}}
+\newcommand{\hp}{\hat{p}}
+\newcommand{\hP}{\hat{P}}
+\newcommand{\hs}{\hat{s}}
+\newcommand{\hS}{\hat{S}}
+\newcommand{\hx}{\hat{x}}
+\newcommand{\hX}{\hat{X}}
+\newcommand{\hw}{\hat{w}}
+\newcommand{\hW}{\hat{W}}
+\newcommand{\hy}{\hat{y}}
+\newcommand{\hY}{\hat{Y}}
+
+%% Custom Commands - from Ali
+\newcounter{figCounter}[section]    %Usage: \fig{filename/label}{caption}
+\newcommand{\fig}[2]{
+\begin{center}\begin{minipage}[t]{\columnwidth}
+\refstepcounter{figCounter}
+\label{#1}
+\includegraphics[width=\columnwidth,keepaspectratio]{#1}\ \\
+\small{\sc Figure \arabic{figCounter}:\ \rm #2}
+\end{minipage}\end{center}
+}
+\newcommand{\smallfig}[3]{  %Usage: \smallfig{filename/label}{caption}{scale}
+\begin{center}\begin{minipage}[t]{\columnwidth}
+\refstepcounter{figCounter}
+\label{#1}
+\begin{center}
+\includegraphics[width=#3\columnwidth,keepaspectratio]{#1}
+\end{center}
+\small{\sc Figure \arabic{figCounter}:\ \rm #2}
+\end{minipage}\end{center}
+}
+
+%%***** END CUSTOM COMMANDS
+
+
+%% Set up the header
+\pagestyle{fancy}
+\headheight 35pt
+\rhead{Shir Aharon}
+\chead{ME 132 a: Lab 2}
+\lhead{}
+\rfoot{}
+\cfoot{\thepage}
+\lfoot{}
+%%%%% Define the title %%%%%
+\title{ME 132 a: Lab 2}
+\author{Shir Aharon\\Tiffany Huang\\Steven Okai}
+
+\begin{document}
+%%%%% Create the beginning pages %%%%%
+\maketitle
+%%%%% Begin problem set %%%%%
+
+\section{TODO}
+
+\end{document}
