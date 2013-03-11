@@ -11,7 +11,7 @@ using namespace PlayerCc;
 using namespace std;
 
 // This defines when we are "close enough" to the goal point
-#define DIST_EPS    0.05
+#define DIST_EPS    0.25
 
 int main(int argc, char **argv)
 {
@@ -32,11 +32,27 @@ int main(int argc, char **argv)
         PlayerClient robot(gHostname, gPort);
         Position2dProxy pp(&robot, gIndex);
         LaserProxy lp(&robot, gIndex);
+        Graphics2dProxy gp(&robot,0);
         int num_attempts = 20;
-        if(!check_robot_connection(robot, pp, 20))
-        {
-            exit(-2);
-        }
+        //if(!check_robot_connection(robot, pp, num_attempts))
+        //{
+        //    exit(-2);
+        //}
+        
+        // TEST PLOTTING CODE START ********************************************
+        player_point_2d_t points2d[5];
+        points2d[0].px = -1; points2d[0].py = -1;
+        points2d[1].px =  1; points2d[1].py = -1;
+        points2d[2].px =  1; points2d[2].py =  1;
+        points2d[3].px = -1; points2d[3].py =  1;
+        points2d[4].px = -1; points2d[4].py = -1;
+        player_color_t color;
+        color.red = 255;
+        color.blue = 0;
+        color.green = 0;
+        //gp.DrawPolygon(points2d, 4, true, color);
+        // END TEST PLOTTING CODE **********************************************
+        
         // Start main processing loop
         while(true)
         {
@@ -56,6 +72,8 @@ int main(int argc, char **argv)
             double r_dot, theta_dot;
             go_to_point(curr_goal.x, curr_goal.y, robot_x, robot_y, robot_theta, &r_dot, &theta_dot);
             pp.SetSpeed(r_dot, theta_dot);
+            gp.Clear();
+            gp.DrawPoints(points2d, 4);
         }
     }
     catch(PlayerError e)
