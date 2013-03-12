@@ -20,10 +20,23 @@ using namespace std;
 #define GRID_UNIT_SIZE  10
 #define LASER_MAX       8
 
+#define PROB_0          0.7
+#define PROB_FREE       0.10
+#define PROB_OCC        0.90
+
 void occupancy_grid_mapping(double **, Pose, vector<Point>);
+
+static const PROB_L_0;
+static const PROB_L_FREE;
+static const PROB_L_OCC;
 
 int main(int argc, char **argv)
 {
+    // Calculate log probablities
+    PROB_L_0 = log(PROB_0/(1.0 - PROB_0));
+    PROB_L_FREE = log(PROB_FREE/(1.0 - PROB_FREE));
+    PROB_L_OCC = log(PROB_OCC/(1.0 - PROB_OCC));
+    
     // Calls the command line parser
     parse_args(argc, argv);
 
@@ -98,11 +111,22 @@ int main(int argc, char **argv)
     return 0;
 }
 
-
 void occupancy_grid_mapping(double **grid, Pose state, vector<Point> measurement)
 {
-
-
-    return;
-
+    // Iterate through all points in the grid
+    for (int = y; y < Y_SIZE; y++)
+    {
+        for (int x = 0; x < X_SIZE; x++)
+        {
+            // Get current point in grid
+            Point curr_point  = Point(x, y);
+            
+            // If the current point is in the perception range of the robot,
+            // update its value in the occupancy grid.
+            if (fabs(curr_point.angle_to(state.x, state.y , state.theta)) < PI)
+            {
+                grid[x][y] = grid[x][y] + inverse_range_sensor_model - PROB_L_0;
+            }
+        }
+    }
 }
