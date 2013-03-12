@@ -189,6 +189,54 @@
 \maketitle
 %%%%% Begin problem set %%%%%
 
-\section{TODO}
+\section{Part I: Point-to-point Control}
+
+\subsection*{Notes on how to run code:}
+
+The mainloop for this section is in the \verb|lab2_part1.cc| file, with helper functions in the \verb|lab2_shared.h| file. For interfacing with the Player/Stage system, we reuse the code from the previous lab in \verb|common_functions| and \verb|cmdline_parsing| files.
+
+The code is currently hardcoded to expect a file named \verb|goal_points.txt| which consists of the $(x,y)$ points to which the robot should attempt to drive to.
+
+\subsection{go\_to\_point() function}
+
+For this function, we start by computing the relative angle that the robot needs to turn, and the distance it needs to drive. The \verb|theta_dot| returned is half of the remaining distance to turn, which is done to prevent overshooting the necessary rotation amount before the next time step. The \verb|r_dot| calculation is a little more complicated. First, if the current direction is more than $22.5^\circ$ off, then the robot is told not to move and just turn. This prevents motion in the incorrect direction. Now again to prevent overshooting the destination or moving too far off from the direct line connecting the current robot location and the goal point, the speed returned is at most the distance to travel. This is divided by 10 for overshoot reasons, but can be scaled back up by the log of the angle offset. Thus the closer to being pointed directly at the goal point, the faster we can safely move.
+
+These parameters were determined somewhat by trial and error. The log scaling for the speed was done in an attempt to move as fast as was deemed ``safe''. The constraints on the turning speed and the $22.5^\circ$ restriction come from experimentally attempting to drive around the map without colliding into walls. In particular, this configuration seemed to allow driving in the center of a 1m wide path on the occupancy map.
+
+\subsection{Simulation Component}
+
+The code for this is in the \verb|lab2_part1.cc| file. It simply connects to the robot and then iterates through the goal points given in a loop that checks if close enough to the current point, and then getting updating speed/direction values.
+
+\subsection{Lab Component}
+
+Demoed in lab.
+
+\section{Part II: Occupancy-Grid Maps}
+
+\subsection*{Notes on how to run code:}
+
+The mainloop for this section is in the \verb|lab2_part2.cc| file, with helper functions in the \verb|lab2_shared.h| file. Again, for interfacing with the Player/Stage system, we reuse the code from the previous lab in the \verb|common_functions| and \verb|cmdline_parsing| files.
+
+As before, the code is currently hardcoded to expect a file named \verb|goal_points.txt| which consists of the $(x,y)$ points to which the robot should attempt to drive to.
+
+\subsection*{Graphics Method}
+
+We used the built in graphics abilities of the Player/Stage system. In order to do this, we modified the \verb|occupancy.cfg| file to add \verb|"graphics2d:0"| to the \verb|provides| list of the driver for the robot model \verb|r0|. For some reason however, this caused problems with the robot connection function \verb|check_robot_connection| from the lab 1 code, so this was taken out. In simulation, the system still connected to the robot and worked correctly.
+
+\subsection{occupancy\_grid\_mapping() function}
+
+
+
+\subsection{Simulation Component}
+
+
+
+\subsection{Lab Component}
+
+Demoed in lab.
+
+\subsection{Group of 3}
+
+
 
 \end{document}

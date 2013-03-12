@@ -68,6 +68,75 @@ istream& operator>>(istream& s, Point& p)
     return s;                   // Return stream
 }
 
+// This object stores the (x,y) coordinates of two paired points
+struct LaserData
+{
+    double range;
+    double bearing;
+    LaserData() : range(0), bearing(0)  {}
+    LaserData(const double r, const double b) : range(r), bearing(b)    {}
+};
+// This function prints out a LaserData as range, bearing
+ostream& operator<<(ostream& os, const LaserData& ld)
+{
+    os << ld.range << ", " << ld.bearing;
+    return os;
+}
+// This function reads in a LaserData given as range, bearing
+istream& operator>>(istream& s, LaserData& dp)
+{
+    double range = 0, bearing = 0;  // initialize components of vector to read in.
+    char ch = 0;                    // characters read in from string
+
+    if (!s)     {return s;}     // stream invalid, just return fail state
+
+    // Read in each component and return if invalid syntax occurs
+    s >> range >> ch;
+    if (ch != ',') {s.clear(ios_base::failbit); return s;}  // no ',' between num
+    s >> bearing >> ch;
+
+    // Everything valid, create Color
+    dp = LaserData(range, bearing);
+
+    return s;
+}
+
+// This object stores the (x,y,yaw) pose of a robot
+struct Pose
+{
+    double x;
+    double y;
+    double theta;
+    Pose() : x(0), y(0), theta(0)  {}
+    Pose(const double x, const double y, const double theta) : x(x), y(y), theta(theta) {}
+};
+// This function prints out a Pose as x, y, theta
+ostream& operator<<(ostream& os, const Pose& p)
+{
+    os << p.x << ", " << p.y << ", " << p.yaw;
+    return os;
+}
+// This function reads in a Pose given as x, y, theta
+istream& operator>>(istream& s, Pose& p)
+{
+    double x = 0, y = 0, theta = 0;   // initialize components of vector to read in.
+    char ch = 0;                    // characters read in from string
+
+    if (!s)     {return s;}     // stream invalid, just return fail state
+
+    // Read in each component and return if invalid syntax occurs
+    s >> x >> ch;
+    if (ch != ',') {s.clear(ios_base::failbit); return s;}  // no ',' between num
+    s >> y >> ch;
+    if (ch != ',') {s.clear(ios_base::failbit); return s;}  // no ',' between num
+    s >> theta >> ch;
+
+    // Everything valid, create Color
+    p = Pose(x, y, theta);
+
+    return s;
+}
+
 // This function implements a go to function based on inputs of where the robot
 // destination is and the current pose. It returns the direction and speed to go
 // by reference.
@@ -84,7 +153,7 @@ int go_to_point(double goal_x, double goal_y,
     *r_dot = (abs(dtheta) < PI/8) * dr * -log(abs(dtheta)) / 10.0;
     *r_dot = (dr < *r_dot) ? dr : *r_dot;
     // Turn angle is simply direction offset
-    *theta_dot = dtheta / 2;    // Slow rotation to preven overshoot
+    *theta_dot = dtheta / 2;    // Slow rotation to prevent overshoot
     return 0;   // Dummy return value
 }
 

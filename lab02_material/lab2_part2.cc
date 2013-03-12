@@ -58,9 +58,14 @@ int main(int argc, char **argv)
         {
             // Read from the proxies
             robot.Read();
-            double robot_x = pp.GetXPos();
-            double robot_y = pp.GetYPos();
-            double robot_theta = pp.GetYaw();
+            Pose robot_pose = Pose(pp.GetXPos(), pp.GetYPos(), pp.GetYaw());
+            // Query the laserproxy to gather the laser scanner data
+            unsigned int n = lp.GetCount();
+            vector<LaserData> data(n);
+            for(uint i=0; i<n; i++)
+            {
+                data[i] = LaserData(lp.GetRange(i), lp.GetBearing(i));
+            }
             // Check if close enough to destination and move to next point if yes
             if (curr_goal.distance_to(robot_x, robot_y) < DIST_EPS)
             {
@@ -70,7 +75,7 @@ int main(int argc, char **argv)
             }
             // Move towards current point
             double r_dot, theta_dot;
-            go_to_point(curr_goal.x, curr_goal.y, robot_x, robot_y, robot_theta, &r_dot, &theta_dot);
+            go_to_point(curr_goal.x, curr_goal.y, robot_pose.x, robot_pose.y, robot_pose.theta, &r_dot, &theta_dot);
             pp.SetSpeed(r_dot, theta_dot);
             gp.Clear();
             gp.DrawPoints(points2d, 4);
