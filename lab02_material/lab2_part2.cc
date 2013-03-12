@@ -24,6 +24,9 @@ using namespace std;
 #define PROB_FREE       0.10
 #define PROB_OCC        0.90
 
+#define ANGLE_EPSILON   1.0
+#define RANGE_EPSILON   10.0
+
 void occupancy_grid_mapping(double **, Pose, vector<Point>);
 
 static const PROB_L_0;
@@ -111,10 +114,10 @@ int main(int argc, char **argv)
     return 0;
 }
 
-void occupancy_grid_mapping(double **grid, Pose state, vector<Point> measurement)
+void occupancy_grid_mapping(double **grid, const Pose &state, const vector<LaserData> &laser_data)
 {
     // Iterate through all points in the grid
-    for (int = y; y < Y_SIZE; y++)
+    for (int y = 0; y < Y_SIZE; y++)
     {
         for (int x = 0; x < X_SIZE; x++)
         {
@@ -123,10 +126,44 @@ void occupancy_grid_mapping(double **grid, Pose state, vector<Point> measurement
             
             // If the current point is in the perception range of the robot,
             // update its value in the occupancy grid.
-            if (fabs(curr_point.angle_to(state.x, state.y , state.theta)) < PI)
+            if (fabs(curr_point.angle_to(state->x, state->y , state->theta)) < PI)
             {
-                grid[x][y] = grid[x][y] + inverse_range_sensor_model - PROB_L_0;
+                grid[x][y] = grid[x][y] + inverse_range_sensor_model(curr_point, state, laser_data) - PROB_L_0;
             }
         }
     }
+}
+
+double inverse_range_sensor_model(const Point &grid_pt, const Pose &state, const vector<LaserData> &laser_data)
+{
+    
+    // Go through list of laser data
+    for (vector<T>::iterator data_i = v.begin(); data_i != v.end(); data_i++)
+    {
+    
+    /* std::cout << *it; ... */
+        LaserData data_pt = (*data_i);
+        double grid_pt_theta = grid_pt.angle_to(state->x, state->y, state->theta);
+        // If grid point on same line as laser data
+        if (fabs(data_pt.bearing - grid_pt_theta) < ANGLE_EPSILON)
+        {
+            
+            double dist_from_robot = grid_pt.distance_to(state);
+            // If grid location is the same as range, occupied
+            if (fabs(dist_from_robot - data_pt.range) < RANGE_EPSILON)
+            {
+                return PROB_L_OCC;
+            }
+            // If grid location is less than range, empty
+            else if (dist_from_robot < data_pt.range)
+            {
+                return PROB_L_FREE;
+            }
+            else {
+                return PROB_L_0;
+            }
+        }
+    }
+    
+    return PROB_L_0;
 }
