@@ -17,6 +17,42 @@
 // Include namespaces for convenience in code writing
 using namespace std;
 
+// This object stores the (x,y,theta) pose of a robot
+struct Pose
+{
+    double x;
+    double y;
+    double theta;
+    Pose() : x(0), y(0), theta(0)  {}
+    Pose(const double x, const double y, const double theta) : x(x), y(y), theta(theta) {}
+};
+// This function prints out a Pose as x, y, theta
+ostream& operator<<(ostream& os, const Pose& p)
+{
+    os << p.x << ", " << p.y << ", " << p.theta;
+    return os;
+}
+// This function reads in a Pose given as x, y, theta
+istream& operator>>(istream& s, Pose& p)
+{
+    double x = 0, y = 0, theta = 0;   // initialize components of vector to read in.
+    char ch = 0;                    // characters read in from string
+
+    if (!s)     {return s;}     // stream invalid, just return fail state
+
+    // Read in each component and return if invalid syntax occurs
+    s >> x >> ch;
+    if (ch != ',') {s.clear(ios_base::failbit); return s;}  // no ',' between num
+    s >> y >> ch;
+    if (ch != ',') {s.clear(ios_base::failbit); return s;}  // no ',' between num
+    s >> theta >> ch;
+
+    // Everything valid, create Color
+    p = Pose(x, y, theta);
+
+    return s;
+}
+
 // This object stores the (x,y) coordinates of a point
 struct Point
 {
@@ -34,6 +70,10 @@ struct Point
         double dy = y - y2;
         return sqrt(dx * dx + dy * dy);
     }
+    double distance_to(const Pose p) const
+    {
+        return distance_to(p.x, p.y);
+    }
     // This function returns the angle between two points.
     double angle_to(const double x2, const double y2) const
     {
@@ -48,6 +88,10 @@ struct Point
         dtheta -= PI * (x2 > x);  // Correct on left half of plane
         dtheta += ((dtheta < -PI) - (dtheta > PI)) * 2 * PI; // Bound on [-PI, PI]
         return dtheta;
+    }
+    double angle_to(const Pose p) const
+    {
+        return angle_to(p.x, p.y, p.theta);
     }
 };
 // This function prints out a Point as [x, y]
@@ -97,42 +141,6 @@ istream& operator>>(istream& s, LaserData& dp)
 
     // Everything valid, create Color
     dp = LaserData(range, bearing);
-
-    return s;
-}
-
-// This object stores the (x,y,yaw) pose of a robot
-struct Pose
-{
-    double x;
-    double y;
-    double theta;
-    Pose() : x(0), y(0), theta(0)  {}
-    Pose(const double x, const double y, const double theta) : x(x), y(y), theta(theta) {}
-};
-// This function prints out a Pose as x, y, theta
-ostream& operator<<(ostream& os, const Pose& p)
-{
-    os << p.x << ", " << p.y << ", " << p.yaw;
-    return os;
-}
-// This function reads in a Pose given as x, y, theta
-istream& operator>>(istream& s, Pose& p)
-{
-    double x = 0, y = 0, theta = 0;   // initialize components of vector to read in.
-    char ch = 0;                    // characters read in from string
-
-    if (!s)     {return s;}     // stream invalid, just return fail state
-
-    // Read in each component and return if invalid syntax occurs
-    s >> x >> ch;
-    if (ch != ',') {s.clear(ios_base::failbit); return s;}  // no ',' between num
-    s >> y >> ch;
-    if (ch != ',') {s.clear(ios_base::failbit); return s;}  // no ',' between num
-    s >> theta >> ch;
-
-    // Everything valid, create Color
-    p = Pose(x, y, theta);
 
     return s;
 }

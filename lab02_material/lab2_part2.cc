@@ -67,7 +67,7 @@ int main(int argc, char **argv)
                 data[i] = LaserData(lp.GetRange(i), lp.GetBearing(i));
             }
             // Check if close enough to destination and move to next point if yes
-            if (curr_goal.distance_to(robot_x, robot_y) < DIST_EPS)
+            if (curr_goal.distance_to(robot_pose) < DIST_EPS)
             {
                 idx++;
                 if (idx == num_points)  {break;} // Exit when done
