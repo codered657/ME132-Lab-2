@@ -1,5 +1,10 @@
 // General include files
 #include <vector>
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include "math.h"
 // Player related files
 #include <libplayerc++/playerc++.h>
 #include "cmdline_parsing.h"
@@ -11,16 +16,18 @@ using namespace PlayerCc;
 using namespace std;
 
 // This defines when we are "close enough" to the goal point
-#define DIST_EPS    0.25
+#define DIST_EPS    0.05
 
-#define X_SIZE          100
-#define Y_SIZE          100
-#define X_START         50
-#define Y_START         50
-#define GRID_UNIT_SIZE  10
+#define X_SIZE          101
+#define Y_SIZE          101
+#define X_START         -2.5
+#define Y_START         -2.5
+#define GRID_UNIT_SIZE  0.05
 #define LASER_MAX       8
 
-void occupancy_grid_mapping(double **, Pose, vector<Point>);
+#define FILENAME        "data.txt"
+
+void occupancy_grid_mapping(double **, Pose &, vector<LaserData> &);
 
 int main(int argc, char **argv)
 {
@@ -34,34 +41,33 @@ int main(int argc, char **argv)
     // Get first point to go to, or exit if none
     if (num_points == 0)  {return 0;}   // Exit when done
     Point curr_goal = p_list[0];
-
+    // Initialize occupancy grid
+    double** grid = new double*[X_SIZE];
+    grid[0] = new double[X_SIZE*Y_SIZE];
+    for (unsigned int i = 1; i < X_SIZE; ++i)   {grid[i] = grid[0] + i*Y_SIZE;}
+    for (unsigned int i = 0; i < X_SIZE; ++i)
+        {for (unsigned int j = 0; j < Y_SIZE; ++j) {grid[i][j] = 1;}}
+    
+    // Open file to save data in
+    ofstream out_file(FILENAME);
+    if (!out_file)
+    {
+        cerr << "Error: Couldn't open " << FILENAME << endl;
+        exit(-1);
+    }
+    
     try
     {
         // Initialize connection to player
         PlayerClient robot(gHostname, gPort);
         Position2dProxy pp(&robot, gIndex);
         LaserProxy lp(&robot, gIndex);
-        Graphics2dProxy gp(&robot,0);
         int num_attempts = 20;
-        //if(!check_robot_connection(robot, pp, num_attempts))
-        //{
-        //    exit(-2);
-        //}
-        
-        // TEST PLOTTING CODE START ********************************************
-        player_point_2d_t points2d[5];
-        points2d[0].px = -1; points2d[0].py = -1;
-        points2d[1].px =  1; points2d[1].py = -1;
-        points2d[2].px =  1; points2d[2].py =  1;
-        points2d[3].px = -1; points2d[3].py =  1;
-        points2d[4].px = -1; points2d[4].py = -1;
-        player_color_t color;
-        color.red = 255;
-        color.blue = 0;
-        color.green = 0;
-        //gp.DrawPolygon(points2d, 4, true, color);
-        // END TEST PLOTTING CODE **********************************************
-        
+        if(!check_robot_connection(robot, pp, num_attempts))
+        {
+            exit(-2);
+        }
+
         // Start main processing loop
         while(true)
         {
@@ -71,7 +77,7 @@ int main(int argc, char **argv)
             // Query the laserproxy to gather the laser scanner data
             unsigned int n = lp.GetCount();
             vector<LaserData> data(n);
-            for(uint i=0; i<n; i++)
+            for(unsigned int i=0; i<n; i++)
             {
                 data[i] = LaserData(lp.GetRange(i), lp.GetBearing(i));
             }
@@ -84,22 +90,37 @@ int main(int argc, char **argv)
             }
             // Move towards current point
             double r_dot, theta_dot;
-            go_to_point(curr_goal.x, curr_goal.y, robot_pose.x, robot_pose.y, robot_pose.theta, &r_dot, &theta_dot);
+            go_to_point(curr_goal.x, curr_goal.y, robot_pose.x, robot_pose.y, 
+                        robot_pose.theta, &r_dot, &theta_dot);
             pp.SetSpeed(r_dot, theta_dot);
-            gp.Clear();
-            gp.DrawPoints(points2d, 4);
+            // Update the occupancy map
+            occupancy_grid_mapping(grid, robot_pose, data);
+            // Write out the occupancy map
+            for (int i = 0; i < X_SIZE; ++i)
+            {
+                for (int j = 0; j < Y_SIZE; ++j)
+                {
+                    out_file << grid[i][j] << ", ";
+                }
+                out_file << endl;
+                out_file.flush();
+            }
         }
     }
     catch(PlayerError e)
     {
         write_error_details_and_exit(argv[0], e);
     }
+    // Clean up
+    out_file.close();
+    delete[] grid[0];
+    delete[] grid;
 
     return 0;
 }
 
 
-void occupancy_grid_mapping(double **grid, Pose state, vector<Point> measurement)
+void occupancy_grid_mapping(double **grid, Pose &state, vector<LaserData> &measurement)
 {
 
 
