@@ -34,19 +34,16 @@ using namespace std;
 #define ANGLE_EPSILON   1.0
 #define RANGE_EPSILON   10.0
 
-static const PROB_L_0;
-static const PROB_L_FREE;
-static const PROB_L_OCC;
+// Calculate log probablities
+static const double PROB_L_0 = log(PROB_0/(1.0 - PROB_0));
+static const double PROB_L_FREE = log(PROB_FREE/(1.0 - PROB_FREE));
+static const double PROB_L_OCC = log(PROB_OCC/(1.0 - PROB_OCC));
 
-void occupancy_grid_mapping(double **, Pose &, vector<LaserData> &);
+void occupancy_grid_mapping(double **, const Pose &, const vector<LaserData> &);
+double inverse_range_sensor_model(const Point &, const Pose &, const vector<LaserData> &);
 
 int main(int argc, char **argv)
 {
-    // Calculate log probablities
-    PROB_L_0 = log(PROB_0/(1.0 - PROB_0));
-    PROB_L_FREE = log(PROB_FREE/(1.0 - PROB_FREE));
-    PROB_L_OCC = log(PROB_OCC/(1.0 - PROB_OCC));
-    
     // Calls the command line parser
     parse_args(argc, argv);
 
@@ -63,7 +60,7 @@ int main(int argc, char **argv)
     for (unsigned int i = 1; i < X_SIZE; ++i)   {grid[i] = grid[0] + i*Y_SIZE;}
     for (unsigned int i = 0; i < X_SIZE; ++i)
         {for (unsigned int j = 0; j < Y_SIZE; ++j) {grid[i][j] = 1;}}
-    
+
     // Open file to save data in
     ofstream out_file(FILENAME);
     if (!out_file)
@@ -71,7 +68,7 @@ int main(int argc, char **argv)
         cerr << "Error: Couldn't open " << FILENAME << endl;
         exit(-1);
     }
-    
+
     try
     {
         // Initialize connection to player
@@ -106,7 +103,7 @@ int main(int argc, char **argv)
             }
             // Move towards current point
             double r_dot, theta_dot;
-            go_to_point(curr_goal.x, curr_goal.y, robot_pose.x, robot_pose.y, 
+            go_to_point(curr_goal.x, curr_goal.y, robot_pose.x, robot_pose.y,
                         robot_pose.theta, &r_dot, &theta_dot);
             pp.SetSpeed(r_dot, theta_dot);
             // Update the occupancy map
@@ -143,11 +140,11 @@ void occupancy_grid_mapping(double **grid, const Pose &state, const vector<Laser
         for (int x = 0; x < X_SIZE; x++)
         {
             // Get current point in grid
-            Point curr_point  = Point(x, y);
-            
+            Point curr_point = Point(x, y);
+
             // If the current point is in the perception range of the robot,
             // update its value in the occupancy grid.
-            if (fabs(curr_point.angle_to(state->x, state->y , state->theta)) < PI)
+            if (fabs(curr_point.angle_to(state.x, state.y , state.theta)) < PI)
             {
                 grid[x][y] = grid[x][y] + inverse_range_sensor_model(curr_point, state, laser_data) - PROB_L_0;
             }
@@ -157,26 +154,22 @@ void occupancy_grid_mapping(double **grid, const Pose &state, const vector<Laser
 
 double inverse_range_sensor_model(const Point &grid_pt, const Pose &state, const vector<LaserData> &laser_data)
 {
-    
     // Go through list of laser data
-    for (vector<T>::iterator data_i = v.begin(); data_i != v.end(); data_i++)
+    for (vector<LaserData>::const_iterator it = laser_data.begin(); it != laser_data.end(); it++)
     {
-    
-    /* std::cout << *it; ... */
-        LaserData data_pt = (*data_i);
-        double grid_pt_theta = grid_pt.angle_to(state->x, state->y, state->theta);
+        double grid_pt_theta = grid_pt.angle_to(state.x, state.y, state.theta);
         // If grid point on same line as laser data
-        if (fabs(data_pt.bearing - grid_pt_theta) < ANGLE_EPSILON)
+        if (fabs((*it).bearing - grid_pt_theta) < ANGLE_EPSILON)
         {
-            
+
             double dist_from_robot = grid_pt.distance_to(state);
             // If grid location is the same as range, occupied
-            if (fabs(dist_from_robot - data_pt.range) < RANGE_EPSILON)
+            if (fabs(dist_from_robot - (*it).range) < RANGE_EPSILON)
             {
                 return PROB_L_OCC;
             }
             // If grid location is less than range, empty
-            else if (dist_from_robot < data_pt.range)
+            else if (dist_from_robot < (*it).range)
             {
                 return PROB_L_FREE;
             }
@@ -185,6 +178,5 @@ double inverse_range_sensor_model(const Point &grid_pt, const Pose &state, const
             }
         }
     }
-    
     return PROB_L_0;
 }
