@@ -13,6 +13,8 @@ using namespace std;
 // This defines when we are "close enough" to the goal point
 #define DIST_EPS    0.25
 
+void occupancy_grid_mapping(double **, Pose, vector<Point>);
+
 int main(int argc, char **argv)
 {
     // Calls the command line parser
@@ -87,4 +89,19 @@ int main(int argc, char **argv)
     }
 
     return 0;
+}
+
+// X_SIZE
+// Y_SIZE
+// X_START
+// Y_START
+// GRID_BLOCK_SIZE
+// LASER_MAX 8 
+
+void occupancy_grid_mapping(double **grid, Pose state, vector<Point> measurement)
+{
+
+
+    return;
+
 }
