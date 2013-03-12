@@ -43,9 +43,12 @@ Y = round(Y);
 data = csvread(data_file);
 data = data(:,1:size(data,2)-1);
 len_data = size(data,1) / x_size;
+% Transform back to probabilities
+data = exp(data);
+data = data ./ (1+data);
 
 % Plot room data
-for t = 0:len_data-1
+for t = 0:10:len_data-1
     disp(t)
     curr_data = data(1+t*x_size:1+(t+1)*x_size, :);
     curr_data = reshape(curr_data,1,[]);

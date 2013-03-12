@@ -15,8 +15,9 @@
 using namespace PlayerCc;
 using namespace std;
 
-// This defines when we are "close enough" to the goal point
-#define DIST_EPS    0.05
+// This defines when we are "close enough"
+#define DIST_EPS        0.05    // Corresponds to 5cm
+#define ANGLE_EPS       0.02    // Corresponds to ~1.15 degree
 
 #define X_SIZE          101
 #define Y_SIZE          101
@@ -27,12 +28,10 @@ using namespace std;
 
 #define FILENAME        "data.txt"
 
-#define PROB_0          0.7
+#define PROB_0          0.70
 #define PROB_FREE       0.10
 #define PROB_OCC        0.90
 
-#define ANGLE_EPSILON   1.0
-#define RANGE_EPSILON   10.0
 
 // Calculate log probablities
 static const double PROB_L_0 = log(PROB_0/(1.0 - PROB_0));
@@ -54,12 +53,12 @@ int main(int argc, char **argv)
     // Get first point to go to, or exit if none
     if (num_points == 0)  {return 0;}   // Exit when done
     Point curr_goal = p_list[0];
-    // Initialize occupancy grid
+    // Initialize occupancy grid to PROB_L_0
     double** grid = new double*[X_SIZE];
     grid[0] = new double[X_SIZE*Y_SIZE];
     for (unsigned int i = 1; i < X_SIZE; ++i)   {grid[i] = grid[0] + i*Y_SIZE;}
     for (unsigned int i = 0; i < X_SIZE; ++i)
-        {for (unsigned int j = 0; j < Y_SIZE; ++j) {grid[i][j] = 1;}}
+        {for (unsigned int j = 0; j < Y_SIZE; ++j) {grid[i][j] = PROB_L_0;}}
 
     // Open file to save data in
     ofstream out_file(FILENAME);
@@ -135,20 +134,23 @@ int main(int argc, char **argv)
 void occupancy_grid_mapping(double **grid, const Pose &state, const vector<LaserData> &laser_data)
 {
     // Iterate through all points in the grid
-    for (int y = 0; y < Y_SIZE; y++)
+    double x = X_START;
+    for (int i = 0; i < X_SIZE; ++i)
     {
-        for (int x = 0; x < X_SIZE; x++)
+        double y = Y_START;
+        for (int j = 0; j < Y_SIZE; ++j)
         {
             // Get current point in grid
             Point curr_point = Point(x, y);
-
             // If the current point is in the perception range of the robot,
             // update its value in the occupancy grid.
-            if (fabs(curr_point.angle_to(state.x, state.y , state.theta)) < PI)
+            if (abs(curr_point.angle_to(state)) < PI/2)
             {
-                grid[x][y] = grid[x][y] + inverse_range_sensor_model(curr_point, state, laser_data) - PROB_L_0;
+                grid[i][j] += inverse_range_sensor_model(curr_point, state, laser_data) - PROB_L_0;
             }
+            y += GRID_UNIT_SIZE;
         }
+        x += GRID_UNIT_SIZE;
     }
 }
 
@@ -157,14 +159,13 @@ double inverse_range_sensor_model(const Point &grid_pt, const Pose &state, const
     // Go through list of laser data
     for (vector<LaserData>::const_iterator it = laser_data.begin(); it != laser_data.end(); it++)
     {
-        double grid_pt_theta = grid_pt.angle_to(state.x, state.y, state.theta);
+        double grid_pt_theta = grid_pt.angle_to(state);
         // If grid point on same line as laser data
-        if (fabs((*it).bearing - grid_pt_theta) < ANGLE_EPSILON)
+        if (abs((*it).bearing - grid_pt_theta) < ANGLE_EPS)
         {
-
             double dist_from_robot = grid_pt.distance_to(state);
             // If grid location is the same as range, occupied
-            if (fabs(dist_from_robot - (*it).range) < RANGE_EPSILON)
+            if (abs(dist_from_robot - (*it).range) < DIST_EPS)
             {
                 return PROB_L_OCC;
             }
@@ -173,7 +174,9 @@ double inverse_range_sensor_model(const Point &grid_pt, const Pose &state, const
             {
                 return PROB_L_FREE;
             }
-            else {
+            // Otherwise unknown
+            else
+            {
                 return PROB_L_0;
             }
         }

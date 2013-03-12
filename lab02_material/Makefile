@@ -10,7 +10,7 @@ all: $(bin)
 
 %: %.cc $(common)
 	echo Player: $(PLAYER_LIB)
-	g++ -o $@ $(PLAYER_LIB)   $^ 
+	g++ -Wall -o $@ $(PLAYER_LIB)   $^ 
 
 clean:
 	rm -f $(bin)
