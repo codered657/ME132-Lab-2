@@ -17,7 +17,7 @@ using namespace std;
 
 // This defines when we are "close enough"
 #define DIST_EPS        0.05    // Corresponds to 5cm
-#define ANGLE_EPS       0.02    // Corresponds to ~1.15 degree
+#define ANGLE_EPS       0.01    // Corresponds to ~1.15 degree
 
 #define X_SIZE          101
 #define Y_SIZE          101
