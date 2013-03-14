@@ -67,7 +67,8 @@ int main(int argc, char **argv)
             }
             
             // Check if next to a wall, if not, proceed
-            if (!next_to_wall(data, MIN_WALL_DIST)) {
+            if (!next_to_wall(data, MIN_WALL_DIST))
+            {
                 // Move towards current point
                 double r_dot, theta_dot;
                 go_to_point(curr_goal.x, curr_goal.y, robot_pose.x, robot_pose.y, 
@@ -80,7 +81,6 @@ int main(int argc, char **argv)
                 pp.SetSpeed(0.0, 0.0);
             }
 
-            
         }
     }
     catch(PlayerError e)

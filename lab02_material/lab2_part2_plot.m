@@ -42,7 +42,7 @@ Y = round(Y);
 % Read in data
 data = csvread(data_file);
 data = data(:,1:size(data,2)-1);
-len_data = size(data,1) / x_size;
+len_data = floor(size(data,1) / (y_size+1));
 % Transform back to probabilities
 data = exp(data);
 data = data ./ (1+data);
@@ -51,7 +51,6 @@ data = data ./ (1+data);
 for t = 0:10:len_data-1
     disp(t)
     curr_data = data(1+t*(y_size+1):(t+1)*(y_size+1), :);
-    size(curr_data)
     curr_data = reshape(curr_data,1,[]);
     color = curr_data' * [1, 0, 0];
     clf

@@ -172,20 +172,15 @@ int go_to_point(double goal_x, double goal_y,
         abs(*theta_dot) > ANGLE_EPS)
     {
         // Set to min turn rate if below
-        if (*theta_dot > 0.0)
-        {
-            *theta_dot = MIN_TURN_RATE;
-        }
-        else
-        {
-            *theta_dot = -MIN_TURN_RATE;
-        }
+        *theta_dot = MIN_TURN_RATE * ((*theta_dot > 0.0) * 2 - 1);
     }
     return 0;   // Dummy return value
 }
 
-bool next_to_wall(const vector<LaserData> &laser_data, double dist_thres) {
-
+// This function returns whether the robot is less than dist_thres meters away
+// from an object.
+bool next_to_wall(const vector<LaserData> &laser_data, double dist_thres)
+{
     // Search laser data for range less that threshold
     for (vector<LaserData>::const_iterator it = laser_data.begin(); it != laser_data.end(); it++)
     {
