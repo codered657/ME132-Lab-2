@@ -50,12 +50,13 @@ data = data ./ (1+data);
 % Plot room data
 for t = 0:10:len_data-1
     disp(t)
-    curr_data = data(1+t*x_size:1+(t+1)*x_size, :);
+    curr_data = data(1+t*(y_size+1):(t+1)*(y_size+1), :);
+    size(curr_data)
     curr_data = reshape(curr_data,1,[]);
     color = curr_data' * [1, 0, 0];
     clf
     imshow(map_image);
     hold on;
-    scatter(X, Y, 2, color);
+    scatter(Y, X, 8, color);
     drawnow
 end
