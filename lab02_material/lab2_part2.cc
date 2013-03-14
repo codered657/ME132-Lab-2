@@ -17,7 +17,7 @@ using namespace std;
 
 // This defines when we are "close enough"
 #define DIST_EPS        0.05    // Corresponds to 5cm
-#define ANGLE_EPS       0.01    // Corresponds to ~1.15 degree
+#define ANGLE_EPS       0.01    // Corresponds to ~0.57 degree
 
 #define X_SIZE          101
 #define Y_SIZE          101
@@ -101,21 +101,30 @@ int main(int argc, char **argv)
                 curr_goal = p_list[idx];
             }
             // Move towards current point
-            double r_dot, theta_dot;
-            go_to_point(curr_goal.x, curr_goal.y, robot_pose.x, robot_pose.y,
-                        robot_pose.theta, &r_dot, &theta_dot);
-            pp.SetSpeed(r_dot, theta_dot);
-            // Update the occupancy map
-            occupancy_grid_mapping(grid, robot_pose, data);
-            // Write out the occupancy map
-            for (int i = 0; i < X_SIZE; ++i)
+            
+            // Check if too close to a wall, if not, proceed.
+            if (!next_to_wall(data, MIN_WALL_DIST))
             {
-                for (int j = 0; j < Y_SIZE; ++j)
+                double r_dot, theta_dot;
+                go_to_point(curr_goal.x, curr_goal.y, robot_pose.x, robot_pose.y,
+                            robot_pose.theta, &r_dot, &theta_dot);
+                pp.SetSpeed(r_dot, theta_dot);
+                // Update the occupancy map
+                occupancy_grid_mapping(grid, robot_pose, data);
+                // Write out the occupancy map
+                for (int i = 0; i < X_SIZE; ++i)
                 {
-                    out_file << grid[i][j] << ", ";
+                    for (int j = 0; j < Y_SIZE; ++j)
+                    {
+                        out_file << grid[i][j] << ", ";
+                    }
+                    out_file << endl;
+                    out_file.flush();
                 }
-                out_file << endl;
-                out_file.flush();
+            }
+            // Otherwise, stop so we don't hit anything.
+            else {
+                pp.SetSpeed(0.0, 0.0);
             }
         }
     }

@@ -50,11 +50,37 @@ int main(int argc, char **argv)
                 if (idx == num_points)  {break;} // Exit when done
                 curr_goal = p_list[idx];
             }
-            // Move towards current point
-            double r_dot, theta_dot;
-            go_to_point(curr_goal.x, curr_goal.y, robot_pose.x, robot_pose.y, 
-                        robot_pose.theta, &r_dot, &theta_dot);
-            pp.SetSpeed(r_dot, theta_dot);
+            
+            // Query the laserproxy to gather the laser scanner data
+            unsigned int n = lp.GetCount();
+            vector<LaserData> data(n);
+            for(unsigned int i=0; i<n; i++)
+            {
+                data[i] = LaserData(lp.GetRange(i), lp.GetBearing(i));
+            }
+            // Check if close enough to destination and move to next point if yes
+            if (curr_goal.distance_to(robot_pose) < DIST_EPS)
+            {
+                idx++;
+                if (idx == num_points)  {break;} // Exit when done
+                curr_goal = p_list[idx];
+            }
+            
+            // Check if next to a wall, if not, proceed
+            if (!next_to_wall(data, MIN_WALL_DIST)) {
+                // Move towards current point
+                double r_dot, theta_dot;
+                go_to_point(curr_goal.x, curr_goal.y, robot_pose.x, robot_pose.y, 
+                            robot_pose.theta, &r_dot, &theta_dot);
+                pp.SetSpeed(r_dot, theta_dot);
+            }
+            // Otherwise, stop so we don't hit anything
+            else
+            {
+                pp.SetSpeed(0.0, 0.0);
+            }
+
+            
         }
     }
     catch(PlayerError e)

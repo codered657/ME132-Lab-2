@@ -13,6 +13,10 @@
 #include <math.h>
 
 #define PI 3.14159265358979323846
+#define MIN_TURN_RATE 0.3
+#define SPEED_EPS 0.01
+#define ANGLE_EPS 0.01
+#define MIN_WALL_DIST 0.1
 
 // Include namespaces for convenience in code writing
 using namespace std;
@@ -162,7 +166,36 @@ int go_to_point(double goal_x, double goal_y,
     *r_dot = (dr < *r_dot) ? dr : *r_dot;
     // Turn angle is simply direction offset
     *theta_dot = dtheta / 2;    // Slow rotation to prevent overshoot
+    
+    // Check that the turn rate is greater than the minimum if turning in place
+    if (abs(*theta_dot) < MIN_TURN_RATE && abs(*r_dot) < SPEED_EPS &&
+        abs(*theta_dot) > ANGLE_EPS)
+    {
+        // Set to min turn rate if below
+        if (*theta_dot > 0.0)
+        {
+            *theta_dot = MIN_TURN_RATE;
+        }
+        else
+        {
+            *theta_dot = -MIN_TURN_RATE;
+        }
+    }
     return 0;   // Dummy return value
+}
+
+bool next_to_wall(const vector<LaserData> &laser_data, double dist_thres) {
+
+    // Search laser data for range less that threshold
+    for (vector<LaserData>::const_iterator it = laser_data.begin(); it != laser_data.end(); it++)
+    {
+        // If an object closer than threshold value, wall nearby
+        if ((*it).range < dist_thres)
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 // Read in points from a given filename
