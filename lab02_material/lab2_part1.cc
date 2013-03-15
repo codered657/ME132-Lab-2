@@ -88,5 +88,6 @@ int main(int argc, char **argv)
         write_error_details_and_exit(argv[0], e);
     }
 
+    pp.SetSpeed(0.0, 0.0);
     return 0;
 }

@@ -17,6 +17,7 @@
 #define SPEED_EPS 0.01
 #define ANGLE_EPS 0.01
 #define MIN_WALL_DIST 0.1
+#define MAX_SPEED 0.3
 
 // Include namespaces for convenience in code writing
 using namespace std;
@@ -164,6 +165,7 @@ int go_to_point(double goal_x, double goal_y,
     // of angle but cap at dr to prevent overshoot
     *r_dot = (abs(dtheta) < PI/8) * dr * -log(abs(dtheta)) / 10.0;
     *r_dot = (dr < *r_dot) ? dr : *r_dot;
+    *r_dot = (MAX_SPEED < *r_dot) ? MAX_SPEED : *r_dot;
     // Turn angle is simply direction offset
     *theta_dot = dtheta / 2;    // Slow rotation to prevent overshoot
     

@@ -133,6 +133,7 @@ int main(int argc, char **argv)
         write_error_details_and_exit(argv[0], e);
     }
     // Clean up
+    pp.SetSpeed(0.0, 0.0);
     out_file.close();
     delete[] grid[0];
     delete[] grid;
