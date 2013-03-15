@@ -1,9 +1,17 @@
-function [] = lab2_part2_plot()
+function [] = lab2_part2_plot(simulation)
 % This function takes a data file of occupancy grid values and plots it
 
 % Define constants
-data_file = 'data.txt';
-map_file = 'lab_obs.png';
+if (simulation == 1)
+    % Use simulation data and simulated lab environment
+    data_file = 'test_data.txt';
+    map_file = 'lab_obs.png';
+else
+    % Use real data with "empty lab environment
+    data_file = 'lab_data.txt';
+    map_file = 'lab_empty.png';
+end
+
 x_size = 101 - 1;
 y_size = 101 - 1;
 x_start = -2.5;
