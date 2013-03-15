@@ -223,7 +223,7 @@ As before, the code is currently hardcoded to expect a file named \verb|goal_poi
 
 \subsection*{Graphics Method}
 
-The code generates a file named \verb|data.txt| which stores the probability values from the occupancy grid by directly writing them out in a comma separated form. Subsequent grids are written out after the previous one in each time step. This is then plotted in matlab by the function \verb|lab2_part2_plot| in \verb|lab2_part2_plot.m|. The matlab code has the sizes hardcoded in, along with the image to use.
+The code generates a file named \verb|data.txt| which stores the probability values from the occupancy grid by directly writing them out in a comma separated form. Subsequent grids are written out after the previous one in each time step. This is then plotted in matlab by the function \verb|lab2_part2_plot| in \verb|lab2_part2_plot.m|. The matlab code has the sizes hardcoded in, along with the image to use. It currently always uses the occupancy grid image, and takes a command line parameter of 0 or 1 for lab data and test data files respectively.
 
 \subsection{occupancy\_grid\_mapping() function}
 
@@ -237,18 +237,30 @@ The driving code is in the \verb|lab2_part1.cc| file. It simply connects to the 
 
 Demoed in lab.
 
+Note that the inaccuracy in the plotting occurring at the last time steps is caused by the error in the wheel odometer. Thus the obstacles shift location, leading to the laser data mapping to the incorrect location.
+
+The data collected in lab is named \verb|lab_data.txt| and the test data is called \verb|test_data.txt|.
+
 \subsection{Group of 3}
 
 \subsubsection{Surprises About the Method}
-Compared to the book, the forward sensor model method proposed in the Thrun paper was surprising because the algorithm cannot be performed incrementally considering that the proposed algorithm needs all the data before it can begin to maximize the occupancy map. The new method is also computationally expensive. Many calculations are required to compute the expected log likelihood of all the data and maximize it. Due to these two traits, this method has very limited real time applications. Many systems require a real time mapping algorithm, so it is surprising that this proposed approach cannot be used in such situations. Additionally, the paper mentions that the algorithm keeps the noise in the result usually and does not always find a unique optimum map, which makes the method seem a bit unreliable.
+
+One surprising thing about both methods is that the algorithms cannot be performed incrementally considering that the proposed algorithms need all the data before they can begin to maximize. This makes both of them more computationally expensive and requires more memory to hold the data in. This rules both algorithms out from real-time applications, unless they can be sped up enough and run in a partially incremental way.
+
+Comparing the algorithm proposed in the paper to the one in the book, the one by Thrun seems much more computationally expensive. This is due to the extra cost of computing the values inside the exponents and the exponents themselves. This is a fixed time cost, but scales with the number of elements being run on and thus leads to a higher multiple of $n$ in an $O(n)$ run time. The paper version also has the extra expectation computation step, which will significantly slow the run time.
+
+One other surprising thing is that the paper version maintains all ``noise'' in the data by rarely declaring a conflict in the observation data. The book version however does not maintain the uncertainty in the map, leading to an overconfident approach. While both of these may be ok for an algorithm run after data collection, it does not seem to lend it self to being run during data collection with partial incrementing data as the previous uncertainty history is lost.
 
 \subsubsection{Computationally Expensive Components}
-The most computationally expensive components of this approach seem to be maximizing the expected data log likelihood because the computation for this part has an iterative nature and involves multiple exponentials, Gaussians, and sums, which all take a while to compute. This aspect of the approach requires multiple passed through data, which is also slow and does not scale well with grid size.
+
+The most computationally expensive components of this approach seem to be maximizing the expected data log likelihood because the computation for this part has an iterative nature and involves multiple exponentials, Gaussians, and sums, which all take a while to compute. This aspect of the approach requires multiple passed through data, which is also slow and does not scale well with grid size. Thus the algorithm seems computationally expensive through a combination of the run time within each iteration loop, and on a larger scale, from the fact that multiple iterations are required.
 
 \subsubsection{Difficulties in Implementation}
-The difficulty in implementing this algorithm seems to lie in achieving a decent computational speed because of the computationally costly expected log likelihood maximization with the E (expectation) and M (maximization) steps. The paper mentions that they can get a map in less than a minute on a low-end PC, which is a very long time, especially for real time applications. Other problems that could occur when implementing this approach are that $\alpha$ cannot be computed to determine the occupancy uncertainty so an $\alpha$ has to be set by hand and the algorithm cannot update incrementally, which prohibits real time applications.
+
+The difficulty in implementing this algorithm seems to lie in achieving a decent computational speed because of the computationally costly expected log likelihood maximization with the E (expectation) and M (maximization) steps. The paper mentions that they can get a map in less than a minute on a low-end PC, which is a very long time, especially for real time applications. As the authors already have working code, it is clear that an implementation is possible and the focus should be on achieving speed. One possible problem with the tractablility could be that $\alpha$ cannot be computed to determine the occupancy uncertainty so an $\alpha$ has to be set by hand. A speed problem (and partially a working implementation problem) is that the algorithm cannot update incrementally, which prohibits real time applications unless significant speed increases can be obtained.
 
 \subsubsection{Approximations}
+
 An approximation that can be made to make the implementation of the proposed method workable, but perhaps not sufficient for use in practice is approximating the marginal posteriors used in calculating the residual occupancy uncertainty because calculating the marginal posteriors is computationally intractable. Additionally, the constraint on when the optimum map is reached could be relaxed to reduce the number of iterations the method requires for a faster computational speed. Next, Gaussian approximations can replace some of the Gaussians in the log likelihood calculations to speed up the interior of the loop. Another possibility is to use a local max instead of searching for a global max to find the optimum map and to run the search for a max on every few incremental points for faster convergence. One other option is to combine this algorithm with the conventional occupancy grid map algorithm by running the conventional algorithm in real time and the proposed algorithm in the paper in the background. This approach would provide a more practical real time application for the proposed method in the paper, but would require additional work to maintain coherency in the grid data as this model lags behind the newest data.
 
 \end{document}
